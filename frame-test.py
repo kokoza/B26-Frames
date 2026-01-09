@@ -6,9 +6,12 @@ bpy.ops.object.mode_set(mode = 'OBJECT')
 context = bpy.context
 scene = context.scene
 
-frame_cyl = bpy.data.objects.get("Cylinder-Sta53.001-JunkoTest")
-frame_cross_section = bpy.data.objects.get("Cylinder-Sta53.001-JunkoTest")
+ref_frame = "Cylinder-Sta53.001-JunkoTest"
+ref_cross_section = "Sta53.5-CrossSect"
 
+frame_cyl = bpy.data.objects.get(ref_frame)
+
+# Function to duplicate object, move it to 3D cursor location, and rotate it appropriately
 def duplicate_object_to_cursor(object_name, vertex_iter):
     # 1. Get the original object from bpy.data.objects
     original_obj = bpy.data.objects.get(object_name)
@@ -29,7 +32,7 @@ def duplicate_object_to_cursor(object_name, vertex_iter):
     
     # Set the location and rotation of the new object to the cursor's location
     new_obj.location = cursor_location
-    new_obj.rotation_euler[1] += math.radians(90+360/64*vertex_iter)  # Rotate 90° around Y axis
+    new_obj.rotation_euler[1] += math.radians(90 + 360/64*vertex_iter)  # Rotate 90° (because reference cross section is not at vertex 0) plus 1/64th of 360 for each iteration around Y axis
 
 # Set mode to edit
 bpy.ops.object.mode_set(mode = 'EDIT') 
@@ -42,11 +45,13 @@ bpy.ops.object.mode_set(mode = 'OBJECT')
 # Select vertex i
 i = 0
 for i in range(64):
+    # Select vertex i of reference frame cylinder to get its x, y, z location
     frame_cyl.data.vertices[i].select = True
     bpy.ops.object.mode_set(mode = 'EDIT') 
-
     v_loc = frame_cyl.data.vertices[i]
 
+    # Move 3D cursor to vertex i
     scene.cursor.location = frame_cyl.matrix_world @ v_loc.co
 
-    duplicate_object_to_cursor('Sta53.5-CrossSect', i)
+    # Duplicate reference cross section to each vertex and rotate as needed
+    duplicate_object_to_cursor(ref_cross_section, i)
