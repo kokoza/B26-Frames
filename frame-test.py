@@ -1,4 +1,5 @@
 import bpy
+import math
 
 bpy.ops.object.mode_set(mode = 'OBJECT')
 
@@ -8,7 +9,7 @@ scene = context.scene
 frame_cyl = bpy.data.objects.get("Cylinder-Sta53.001-JunkoTest")
 frame_cross_section = bpy.data.objects.get("Cylinder-Sta53.001-JunkoTest")
 
-def duplicate_object_to_cursor(object_name, suffix):
+def duplicate_object_to_cursor(object_name, suffix, i):
     # 1. Get the original object from bpy.data.objects
     original_obj = bpy.data.objects.get(object_name)
     if original_obj is None:
@@ -26,14 +27,9 @@ def duplicate_object_to_cursor(object_name, suffix):
     # 4. Link the new object to the active collection so it appears in the scene
     bpy.context.collection.objects.link(new_obj)
     
-    # 5. Set the location of the new object to the cursor's location
+    # Set the location and rotation of the new object to the cursor's location
     new_obj.location = cursor_location
-    
-    print(f"Duplicated '{object_name}' to {tuple(cursor_location)} as '{new_obj.name}'")
-    
-    
-
-
+    new_obj.rotation_euler[1] += math.radians(90)  # Rotate 90° around Y axis
 
 # Set mode to edit
 bpy.ops.object.mode_set(mode = 'EDIT') 
@@ -45,7 +41,7 @@ bpy.ops.mesh.select_all(action = 'DESELECT')
 bpy.ops.object.mode_set(mode = 'OBJECT')
 # Select vertex i
 i = 0
-for i in range(32):
+for i in range(16):
     frame_cyl.data.vertices[i].select = True
     bpy.ops.object.mode_set(mode = 'EDIT') 
 
@@ -53,4 +49,4 @@ for i in range(32):
 
     scene.cursor.location = frame_cyl.matrix_world @ v_loc.co
 
-    duplicate_object_to_cursor('Sta53.5-CrossSect', i)
+    duplicate_object_to_cursor('Sta53.5-CrossSect', i, i)
