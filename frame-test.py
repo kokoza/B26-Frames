@@ -9,7 +9,7 @@ scene = context.scene
 frame_cyl = bpy.data.objects.get("Cylinder-Sta53.001-JunkoTest")
 frame_cross_section = bpy.data.objects.get("Cylinder-Sta53.001-JunkoTest")
 
-def duplicate_object_to_cursor(object_name, suffix, i):
+def duplicate_object_to_cursor(object_name, vertex_iter):
     # 1. Get the original object from bpy.data.objects
     original_obj = bpy.data.objects.get(object_name)
     if original_obj is None:
@@ -22,14 +22,14 @@ def duplicate_object_to_cursor(object_name, suffix, i):
     # 3. Duplicate the object using the data API (creates a new object data reference)
     # The new object will share the mesh data (linked duplicate by data API approach)
     new_obj_data = original_obj.data
-    new_obj = bpy.data.objects.new(f"{object_name}.{suffix}", new_obj_data)
+    new_obj = bpy.data.objects.new(f"{object_name}.{vertex_iter}", new_obj_data)
     
     # 4. Link the new object to the active collection so it appears in the scene
     bpy.context.collection.objects.link(new_obj)
     
     # Set the location and rotation of the new object to the cursor's location
     new_obj.location = cursor_location
-    new_obj.rotation_euler[1] += math.radians(90)  # Rotate 90° around Y axis
+    new_obj.rotation_euler[1] += math.radians(90+360/64*vertex_iter)  # Rotate 90° around Y axis
 
 # Set mode to edit
 bpy.ops.object.mode_set(mode = 'EDIT') 
@@ -41,7 +41,7 @@ bpy.ops.mesh.select_all(action = 'DESELECT')
 bpy.ops.object.mode_set(mode = 'OBJECT')
 # Select vertex i
 i = 0
-for i in range(16):
+for i in range(64):
     frame_cyl.data.vertices[i].select = True
     bpy.ops.object.mode_set(mode = 'EDIT') 
 
@@ -49,4 +49,4 @@ for i in range(16):
 
     scene.cursor.location = frame_cyl.matrix_world @ v_loc.co
 
-    duplicate_object_to_cursor('Sta53.5-CrossSect', i, i)
+    duplicate_object_to_cursor('Sta53.5-CrossSect', i)
